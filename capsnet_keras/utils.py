@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 import csv
 import math
 
+
 def plot_log(filename, show=True):
     # load data
     keys = []
@@ -10,7 +11,7 @@ def plot_log(filename, show=True):
     with open(filename, 'r') as f:
         reader = csv.DictReader(f)
         for row in reader:
-            if keys == []:
+            if len(keys) == 0:
                 for key, value in row.items():
                     keys.append(key)
                     values.append(float(value))
@@ -20,9 +21,9 @@ def plot_log(filename, show=True):
                 values.append(float(value))
 
         values = np.reshape(values, newshape=(-1, len(keys)))
-        values[:,0] += 1
+        values[:, 0] += 1
 
-    fig = plt.figure(figsize=(4,6))
+    fig = plt.figure(figsize=(4, 6))
     fig.subplots_adjust(top=0.95, bottom=0.05, right=0.95)
     fig.add_subplot(211)
     for i, key in enumerate(keys):
@@ -38,7 +39,6 @@ def plot_log(filename, show=True):
     plt.legend()
     plt.title('Training and validation accuracy')
 
-    # fig.savefig('result/log.png')
     if show:
         plt.show()
 
@@ -59,12 +59,10 @@ def combine_images(generated_images, height=None, width=None):
     for index, img in enumerate(generated_images):
         i = int(index/width)
         j = index % width
-        image[i*shape[0]:(i+1)*shape[0], j*shape[1]:(j+1)*shape[1]] = \
+        image[i * shape[0]: (i+1) * shape[0], j * shape[1]: (j+1) * shape[1]] = \
             img[:, :, 0]
     return image
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     plot_log('result/log.csv')
-
-
-
