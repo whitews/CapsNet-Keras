@@ -123,52 +123,69 @@ def margin_loss(y_true, y_pred):
     return k.mean(k.sum(loss, 1))
 
 
-def train(model, data, args):
+def train(
+        model,
+        data,
+        save_dir,
+        batch_size,
+        epochs,
+        lr,
+        lr_decay,
+        lam_recon,
+        shift_fraction,
+        debug=False):
     """
     Training a CapsuleNet
     :param model: the CapsuleNet model
     :param data: a tuple containing training and testing data,
                  like `((x_train, y_train), (x_test, y_test))`
-    :param args: arguments
+    :param save_dir: directory where results are saved
+    :param batch_size: batch size
+    :param epochs: number of epochs
+    :param lr: learning rate
+    :param lr_decay: learning rate decay
+    :param lam_recon: ?
+    :param shift_fraction: number of pixels to shift
+    :param debug: turn on debugging
     :return: The trained model
     """
     # unpacking the data
     (x_train, y_train), (x_test, y_test) = data
 
     # callbacks
-    log = callbacks.CSVLogger(args.save_dir + '/log.csv')
+    log = callbacks.CSVLogger(save_dir + '/log.csv')
     tb = callbacks.TensorBoard(
-        log_dir=args.save_dir + '/tensorboard-logs',
-        batch_size=args.batch_size,
-        histogram_freq=int(args.debug)
+        log_dir=save_dir + '/tensorboard-logs',
+        batch_size=batch_size,
+        histogram_freq=int(debug)
     )
     checkpoint = callbacks.ModelCheckpoint(
-        args.save_dir + '/weights-{epoch:02d}.h5',
+        save_dir + '/weights-{epoch:02d}.h5',
         monitor='val_capsnet_acc',
         save_best_only=True,
         save_weights_only=True,
         verbose=1
     )
-    lr_decay = callbacks.LearningRateScheduler(
-        schedule=lambda epoch: args.lr * (args.lr_decay ** epoch)
+    lr_scheduler = callbacks.LearningRateScheduler(
+        schedule=lambda epoch: lr * (lr_decay ** epoch)
     )
 
     # compile the model
     model.compile(
-        optimizer=optimizers.Adam(lr=args.lr),
+        optimizer=optimizers.Adam(lr=lr),
         loss=[margin_loss, 'mse'],
-        loss_weights=[1., args.lam_recon],
+        loss_weights=[1., lam_recon],
         metrics={'capsnet': 'accuracy'}
     )
 
     # Begin: Training with data augmentation
-    def train_generator(x, y, batch_size, shift_fraction=0.):
+    def train_generator(x, y, tg_batch_size, tg_shift_fraction=0.):
         # shift up to 2 pixel for MNIST
         train_datagen = ImageDataGenerator(
-            width_shift_range=shift_fraction,
-            height_shift_range=shift_fraction
+            width_shift_range=tg_shift_fraction,
+            height_shift_range=tg_shift_fraction
         )
-        generator = train_datagen.flow(x, y, batch_size=batch_size)
+        generator = train_datagen.flow(x, y, batch_size=tg_batch_size)
         while 1:
             x_batch, y_batch = generator.next()
             yield ([x_batch, y_batch], [y_batch, x_batch])
@@ -179,20 +196,20 @@ def train(model, data, args):
         generator=train_generator(
             x_train,
             y_train,
-            args.batch_size,
-            args.shift_fraction
+            batch_size,
+            shift_fraction
         ),
-        steps_per_epoch=int(y_train.shape[0] / args.batch_size),
-        epochs=args.epochs,
+        steps_per_epoch=int(y_train.shape[0] / batch_size),
+        epochs=epochs,
         validation_data=[[x_test, y_test], [y_test, x_test]],
-        callbacks=[log, tb, checkpoint, lr_decay]
+        callbacks=[log, tb, checkpoint, lr_scheduler]
     )
     # End: Training with data augmentation
 
-    model.save_weights(args.save_dir + '/trained_model.h5')
-    print('Trained model saved to \'%s/trained_model.h5\'' % args.save_dir)
+    model.save_weights(save_dir + '/trained_model.h5')
+    print('Trained model saved to \'%s/trained_model.h5\'' % save_dir)
 
-    plot_log(args.save_dir + '/log.csv', show=True)
+    plot_log(save_dir + '/log.csv', show=True)
 
     return model
 
