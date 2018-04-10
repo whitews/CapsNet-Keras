@@ -51,10 +51,20 @@ if __name__ == "__main__":
         capsulenet.train(
             model=model,
             data=((x_train, y_train), (x_test, y_test)),
-            args=args
+            save_dir=args.save_dir,
+            batch_size=args.batch_size,
+            epochs=args.epochs,
+            lr=args.lr,
+            lr_decay=args.lr_decay,
+            lam_recon=args.lam_recon,
+            shift_fraction=args.shift_fraction
         )
     else:  # as long as weights are given, will run testing
         if args.weights is None:
             print('No weights provided, using random initialized weights.')
         capsulenet.manipulate_latent(manipulate_model, (x_test, y_test), args)
-        capsulenet.test(model=eval_model, data=(x_test, y_test), args=args)
+        capsulenet.test(
+            model=eval_model,
+            data=(x_test, y_test),
+            save_dir=args.save_dir
+        )

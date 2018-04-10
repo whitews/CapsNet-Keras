@@ -214,7 +214,7 @@ def train(
     return model
 
 
-def test(model, data, args):
+def test(model, data, save_dir):
     x_test, y_test = data
     y_pred, x_recon = model.predict(x_test, batch_size=100)
     print('-'*30 + 'Begin: test' + '-'*30)
@@ -225,11 +225,12 @@ def test(model, data, args):
 
     img = combine_images(np.concatenate([x_test[:50], x_recon[:50]]))
     image = img * 255
-    Image.fromarray(image.astype(np.uint8)).save(args.save_dir + "/real_and_recon.png")
+    Image.fromarray(image.astype(np.uint8)).save(save_dir + "/real_and_recon.png")
+    # TODO: show images for misclassified data
     print()
-    print('Reconstructed images are saved to %s/real_and_recon.png' % args.save_dir)
+    print('Reconstructed images are saved to %s/real_and_recon.png' % save_dir)
     print('-' * 30 + 'End: test' + '-' * 30)
-    plt.imshow(plt.imread(args.save_dir + "/real_and_recon.png"))
+    plt.imshow(plt.imread(save_dir + "/real_and_recon.png"))
     plt.show()
 
 
