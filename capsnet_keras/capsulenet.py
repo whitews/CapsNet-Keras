@@ -6,17 +6,6 @@ The current version maybe only works for TensorFlow backend. Actually it
 will be straightforward to re-write to TF code. Adopting to other backends
 should be easy, but I have not tested this.
 
-Usage:
-       python capsulenet.py
-       python capsulenet.py --epochs 50
-       python capsulenet.py --epochs 50 --routings 3
-       ... ...
-       
-Result:
-    Validation accuracy > 99.5% after 20 epochs.
-    Converge to 99.66% after 50 epochs.
-    About 110 seconds per epoch on a single GTX1070 GPU card
-    
 Author: Xifeng Guo
 E-mail: `guoxifeng1990@163.com`
 Github: `https://github.com/XifengGuo/CapsNet-Keras`
@@ -106,6 +95,7 @@ def build_caps_net(input_shape, n_class, n_routings):
     noised_digit_caps = layers.Add()([digit_caps, noise])
     masked_noised_y = Mask()([noised_digit_caps, y])
     manipulate_model = models.Model([x, y, noise], decoder(masked_noised_y))
+
     return train_model, eval_model, manipulate_model
 
 
@@ -235,7 +225,7 @@ def test(model, data, save_dir):
 
 
 def manipulate_latent(model, data, digit, save_dir):
-    print('-'*30 + 'Begin: manipulate' + '-'*30)
+    print('-' * 30 + 'Begin: manipulate' + '-' * 30)
     x_test, y_test = data
     index = np.argmax(y_test, 1) == digit
     number = np.random.randint(low=0, high=sum(index) - 1)
@@ -268,4 +258,5 @@ def load_mnist():
     x_test = x_test.reshape(-1, 28, 28, 1).astype('float32') / 255.
     y_train = to_categorical(y_train.astype('float32'))
     y_test = to_categorical(y_test.astype('float32'))
+
     return (x_train, y_train), (x_test, y_test)

@@ -6,14 +6,6 @@ The current version maybe only works for TensorFlow backend. Actually it
 will be straightforward to re-write to TF code. Adopting to other backends
 should be easy, but I have not tested this.
 
-Usage:
-       python capsulenet-multi-gpu.py
-       python capsulenet-multi-gpu.py --gpus 2
-       ... ...
-
-Result:
-    About 55 seconds per epoch on two GTX1080Ti GPU cards
-
 Author: Xifeng Guo
 E-mail: `guoxifeng1990@163.com`
 Github: `https://github.com/XifengGuo/CapsNet-Keras`
